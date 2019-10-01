@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>JSON to Canvas</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+
+    <link href="css/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="js/jsoneditor.min.js"></script>
+    <style>
+        .code-box {
+            padding: 20px;
+        }
+
+        .code-box .json_text_area {
+            height: 400px;
+            width: 300px;
+        }
+
+        .code-box .json_text_area_output {
+
+            height: 100px;
+            width: 300px;
+        }
+
+        .image-box {
+            padding: 20px;
+        }
+    </style>
+
+
+
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row">
+            <div class="code-box ">
+                <div class="col-md-12">
+                    <div class="row">Input :</div>
+
+                    <div class="row">
+                        <!-- <textarea id="json_text_area" class="json_text_area"></textarea> -->
+                        <div id="jsoneditor" style="width: 400px; height: 400px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-12" style="margin-top: 40px;">
+                    <div class="row">Output :</div>
+
+                    <div class="row">
+                        <div id="jsoneditorOutput" style="width: 400px; height: 200px;"></div>
+                        <!--               
+                            <textarea id="json_text_area_output" class="json_text_area_output"></textarea> -->
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="image-box">
+
+                <div class="row">
+                    Canvas
+                </div>
+
+                <div class="row">
+                    <canvas id="myCanvas" style="">
+                        Your browser does not support the canvas element.
+                    </canvas>
+
+
+
+                </div>
+                <div class="row">
+                    <button onclick="generateCanvas(event)">Generate Output</button>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <script type="text/javascript">
+        var container, containerOutput;
+        $(document).ready(function () {
+            var jsonOp = {};
+
+            var jsonObj = {
+                "canvas": {
+                    "height": "100px",
+                    "width": "200px",
+                    "bgcolor": "green",
+                    "bgimage": ""
+                },
+                "content": [
+                    {
+                        "type": "script",
+                        "text": "Hi my name is",
+                        "font": "Arial",
+                        "size": "14px",
+                        "color": "red",
+                        "bold": true,
+                        "italic": false,
+                        "underline": false,
+                        "x-axis": "10",
+                        "y-axis": "70"
+                    },
+                    {
+                        "type": "script",
+                        "text": "TCS",
+                        "font": "Times New Roman",
+                        "size": "10px",
+                        "color": "green",
+                        "bold": true,
+                        "italic": false,
+                        "underline": false,
+                        "x-axis": "20",
+                        "y-axis": "50"
+                    },
+                    {
+                        "type": "image",
+                        "source": "",
+                        "x-axis": "100",
+                        "y-axis": "100",
+                        "height": "70",
+                        "width": "100"
+                    }
+                ]
+            };
+
+            // $("#jsoneditor").val(JSON.stringify(jsonObj, null, 1));
+
+            const options = {
+                mode: 'code',
+                modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], // allowed modes
+                onError: function (err) {
+                    alert(err.toString())
+                },
+                onModeChange: function (newMode, oldMode) {
+                    console.log('Mode switched from', oldMode, 'to', newMode)
+                }
+            }
+            const container = document.getElementById("jsoneditor")
+
+            const containerOutput = document.getElementById("jsoneditorOutput");
+
+            editor = new JSONEditor(container, options)
+            editorOutput = new JSONEditor(containerOutput, options)
+            editor.set(jsonObj);
+            editorOutput.set(jsonOp);
+
+
+
+        });
+
+        function generateCanvas(event) {
+            console.log(event);
+
+
+            var jsonObj = editor.get();
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            canvas.setAttribute("width", jsonObj.canvas.width);
+            canvas.setAttribute("height", jsonObj.canvas.height);
+
+            function drawContent() {
+                jsonObj.content.forEach(function (obj, index) {
+                    var elementType = obj.type;
+
+                    switch (elementType) {
+                        case "script":
+                            {
+                                var styles = obj.Bold ? "bold " : "" + obj.italic ? "italic " : "" + obj.underline ? "underline " : ""
+                                ctx.font = styles + obj.size + " " + obj.font;
+                                ctx.fillStyle = obj.color;
+                                ctx.fillText(obj.text, parseInt(obj["x-axis"]), parseInt(jsonObj.canvas.height) - parseInt(obj["y-axis"]));
+                                console.log("Canvas Details", ctx.font, ctx.fillStyle, parseInt(obj["x-axis"]), obj["y-axis"])
+                                if (index == jsonObj.content.length - 1) {
+                                    downloadCanvas();
+                                }
+                            }
+                            break;
+                        case "image":
+                            {
+                                drawImage(obj.source, parseInt(obj["x-axis"]), parseInt(jsonObj.canvas.height) - parseInt(obj["y-axis"]), false, index, jsonObj.content.length, obj["height"], obj["width"]);
+                            }
+                    }
+
+
+                });
+            }
+
+            function drawImage(filepath, x, y, isBg, index, len, hght, wid) {
+                if (filepath.includes("file:///")) {
+                    $.ajax({
+                        "type": "POST",
+                        "contentType": "application/json",
+                        "dataType": "json",
+                        "url": "/getFile",
+                        "data": JSON.stringify({
+                            data: filepath
+                        }),
+                        "success": function (data, status) {
+                            console.log(data);
+                            var background = new Image();
+                            background.crossOrigin = "Anonymous"
+                            background.src = data.data;
+                            background.onload = function () {
+                                if (hght != null && wid != null) {
+                                    ctx.drawImage(background, x, y, wid, hght);
+                                } else {
+                                    ctx.drawImage(background, x, y);
+                                }
+
+                                if (isBg) {
+                                    drawContent();
+                                } else {
+                                    if (index == len - 1) {
+                                        downloadCanvas();
+                                    }
+                                }
+
+                            }
+
+
+                        }
+                    });
+                } else {
+                    var background = new Image();
+                    background.src = filepath;
+                    background.crossOrigin = "Anonymous"
+                    background.onload = function () {
+                        if (hght != null && wid != null) {
+                            ctx.drawImage(background, x, y, wid, hght);
+                        } else {
+                            ctx.drawImage(background, x, y);
+                        }
+                        if (isBg) {
+                            drawContent();
+                        } else {
+                            if (index == len - 1) {
+                                downloadCanvas();
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            for (var k in jsonObj.canvas) {
+                if (jsonObj.canvas.hasOwnProperty(k)) {
+                    switch (k) {
+                        case "bgcolor":
+                            {
+                                ctx.fillStyle = jsonObj.canvas[k];
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                if (!jsonObj.canvas.hasOwnProperty("bgimage")) {
+                                    drawContent();
+                                }
+
+                                break;
+                            }
+                        case "bgimage":
+                            {
+                                drawImage(jsonObj.canvas[k], 0, 0, true, null, null, null, null);
+
+
+                                break;
+                            }
+                        default: {
+                            //  drawContent();
+                            break;
+                        }
+                    }
+                    console.log("Key is " + k + ", value is " + jsonObj.canvas[k]);
+                }
+            }
+
+
+
+        }
+
+
+
+
+        function downloadCanvas() {
+            var image = document.getElementById("myCanvas").toDataURL("image/png", 0.99)
+                .replace("image/jpg", "image/octet-stream");
+
+            //.replace("image/png", "image/octet-stream");
+            $.ajax({
+                "type": "POST",
+                "contentType": "application/json",
+                "dataType": "json",
+                "url": "/saveFile",
+                "data": JSON.stringify({
+                    data: image
+                }),
+                "success": function (data, status) {
+                    editorOutput.set(data);
+                    // $("#json_text_area_output").val(JSON.stringify(data));
+                }
+            });
+        }
+
+
+    </script>
+
+</body>
+
+</html>
